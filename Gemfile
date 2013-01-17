@@ -8,7 +8,24 @@ gem 'blacklight', '4.0.0'
 gem 'hydra-head', '5.2.0'
 gem 'dri_data_models', :git => 'git@dev.forasfeasa.ie:dri_data_models.git'
 
-gem 'sqlite3'
+gem 'sqlite3', :platforms => :ruby
+
+platforms :jruby do
+  gem 'jruby-openssl'
+  gem 'activerecord-jdbcsqlite3-adapter'
+  gem 'jruby-lint'
+  gem 'warbler'
+
+  gem 'actionmailer'
+  gem 'actionpack'
+  gem 'activerecord'
+  gem 'activerecord-jdbc-adapter'
+  gem 'activeresource'
+  gem 'activesupport'
+  gem 'jdbc-mysql'
+  gem 'rack'
+  gem 'rake' 
+end
 
 gem 'devise'
 
