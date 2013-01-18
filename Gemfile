@@ -31,6 +31,8 @@ gem 'devise'
 
 gem 'noid', '0.5.5'
 
+gem 'ruby-filemagic'
+
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
