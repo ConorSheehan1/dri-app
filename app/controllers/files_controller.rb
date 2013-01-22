@@ -1,15 +1,18 @@
+# Creates, updates, or retrieves files attached to the objects masterContent datastream.
+#
 class FilesController < AssetsController
 
   require 'validators'
 
+  # Returns the directory on the local filesystem to use for storing uploaded files.
+  #
   def local_storage_dir
     Rails.root.join('dri_files')
   end
 
   # Retrieves external datastream files that have been stored in the filesystem.
   # By default, it retrieves the file in the masterContent datastream
-  #
-  # 
+  #      
   def show
     datastream = "masterContent"
     @object = retrieve_object params[:id]
@@ -32,7 +35,10 @@ class FilesController < AssetsController
 
     render :text => "Unable to find file"
   end
-  
+
+  # Stores an uploaded file to the local filesystem and then attaches it to one
+  # of the objects datastreams. masterContent is used by default.
+  #
   def create
     datastream = "masterContent"
     if params.has_key?(:datastream)
@@ -54,15 +60,14 @@ class FilesController < AssetsController
 
           dir = local_storage_dir.join(@object.id).join(datastream+count.to_s)
 
-            @url = url_for :controller=>"files", :action=>"show", :id=>params[:id]
-            logger.error @action_url
-            @object.add_file_reference datastream, :url=>@url, :mimeType=>@file.mime_type
-            @object.save
+          @file = LocalFile.new
+          @file.add_file params[:Filedata], {:fedora_id => @object.id, :ds_id => datastream, :directory => dir.to_s, :version => count}
+          @file.save!
 
-            flash[:notice] = "File has been successfully uploaded."
-          else
-            flash[:notice] = "The file does not appear to be a valid type"
-          end
+          @url = url_for :controller=>"files", :action=>"show", :id=>params[:id]
+          logger.error @action_url
+          @object.add_file_reference datastream, :url=>@url, :mimeType=>@file.mime_type
+          @object.save
 
           flash[:notice] = "File has been successfully uploaded."
 
