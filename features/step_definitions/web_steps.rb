@@ -7,9 +7,59 @@ World(WithinHelpers)
 
 Given /^I have created a Digital Object$/ do
   steps %{
-    Given I am on the new Digital Object page
-    When I attach the metadata file "valid_metadata.xml"
-    And I press "Ingest Metadata"
+    Given I have created a collection
+    And I am on the new Digital Object page
+    And I select a collection
+    And I press the button to continue
+    And I select "audio" from the selectbox for object type
+    And I press the button to continue
+    And I select "upload" from the selectbox for ingest methods
+    And I press the button to continue
+    And I attach the metadata file "valid_metadata.xml"
+    And I press the button to ingest metadata
+  }
+end
+
+Given /^I have created a (pdfdoc|audio) object$/ do |type|
+  steps %{
+    Given I have created a collection
+    And I am on the new Digital Object page
+    And I select a collection
+    And I press the button to continue
+    And I select "#{type}" from the selectbox for object type
+    And I press the button to continue
+    And I select "upload" from the selectbox for ingest methods
+    And I press the button to continue
+    And I attach the metadata file "valid_metadata.xml"
+    And I press the button to ingest metadata
+  }
+end
+
+Given /^I have created a collection$/ do
+  steps %{
+    Given I am on the my collections page
+    And I press the button to add new collection
+    And I enter valid metadata for a collection
+    And I press the button to create a collection
+  }
+end
+
+Given /^I have created a collection with title "(.+)"$/ do |title|
+  steps %{
+    Given I am on the my collections page
+    And I press the button to add new collection
+    And I enter valid metadata for a collection with title #{title}
+    And I press the button to create a collection
+  }
+end
+
+Given /^I have added an audio file$/ do
+  steps %{
+    Then I should see a link to edit an object
+    When I follow the link to edit an object
+    And I attach the asset file "sample_audio.mp3"
+    And I press the button to upload a file
+    Then I should see a success message for file upload
   }
 end
 
@@ -21,22 +71,76 @@ When /^(?:|I )go to (.+)$/ do |page_name|
   visit path_to(page_name)
 end
 
+When /^(?:|I )follow the link to (.+)$/ do |link_name|
+  click_link(link_to_id(link_name))
+end
+
 When /^(?:|I )follow "([^"]*)"(?: within "([^"]*)")?$/ do |link, selector|
   with_scope(selector) do
     click_link(link)
   end
 end
 
+When /^I select "(.*?)" from the selectbox for (.*?)$/ do |option, selector|
+  select_by_value(option, :from => select_box_to_id(selector))
+end
+
+When /^I select the text "(.*?)" from the selectbox for (.*?)$/ do |option, selector|
+  select(option, :from => select_box_to_id(selector))
+end
+
 When /^I attach the metadata file "(.*?)"$/ do |file|
   attach_file("metadata_file", File.join(cc_fixture_path, file))
 end
 
-When /^I attach the audio file "(.*?)"$/ do |file|
+When /^I enter valid metadata$/ do
+  interface.enter_valid_metadata
+end
+
+When /^I enter modified metadata$/ do
+  interface.enter_modified_metadata
+end
+
+When /^I attach the asset file "(.*?)"$/ do |file|
   attach_file("Filedata", File.join(cc_fixture_path, file))
 end
 
+When /^I select a collection$/ do
+  second_option_xpath = "//*[@id='ingestcollection']/option[2]"
+  second_option = find(:xpath, second_option_xpath).value
+  select_by_value(second_option, :from => "ingestcollection")
+end
+
+Then /^I should see the valid metadata$/ do
+  interface.has_valid_metadata?
+end
+
+Then /^I should see the modified metadata$/ do
+  interface.has_modified_metadata?
+end
+
 Then /^I press "(.*?)"$/ do |button|
-  click_button(button)
+  click_link_or_button(button)
+end
+
+Then /^(?:|I )press the button to (.+)$/ do |button|
+  click_link_or_button(button_to_id(button))
+end 
+
+Then /^(?:|I )should see a link to (.+)$/ do |link|
+  page.should have_link(link_to_id(link))
+end
+
+Then /^(?:|I )should not see a link to (.+)$/ do |link|
+  page.should_not have_link(link_to_id(link))
+end
+
+Then /^(?:|I )should see a success message for (.+)$/ do |message|
+  page.should have_selector ".alert", text: flash_for(message)
+end
+
+Then /^(?:|I )should see an error message for (.+)$/ do |message|
+  page.should have_selector ".alert", text: flash_for(message)
 end
 
 Then /^(?:|I )should see "([^"]*)"(?: within "([^"]*)")?$/ do |text, selector|
@@ -49,9 +153,13 @@ Then /^(?:|I )should see "([^"]*)"(?: within "([^"]*)")?$/ do |text, selector|
   end
 end
 
-Then /^I should see a link to "([^\"]*)"$/ do |text|
-  page.should have_link(text)
+Then /^the object should be (.*?) format$/ do |format|
+  interface.is_format?(format)
 end
+
+#Then /^I should see a link to "([^\"]*)"$/ do |text|
+#  page.should have_link(text)
+#end
 
 Then /^I should see a link to "([^\"]*)" with text "([^\"]*)"$/ do |url, text|
   page.should have_link(text, href: url) 

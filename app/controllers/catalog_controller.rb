@@ -1,6 +1,8 @@
 # -*- encoding : utf-8 -*-
 require 'blacklight/catalog'
 
+# Blacklight catalog controller
+#
 class CatalogController < ApplicationController  
 
   include Blacklight::Catalog
@@ -12,7 +14,7 @@ class CatalogController < ApplicationController
   # This applies appropriate access controls to all solr queries
   CatalogController.solr_search_params_logic += [:add_access_controls_to_solr_params]
   # This filters out objects that you want to exclude from search results, like FileAssets
-  CatalogController.solr_search_params_logic += [:exclude_unwanted_models]
+  CatalogController.solr_search_params_logic += [:exclude_unwanted_models, :exclude_collection_models]
 
   configure_blacklight do |config|
     config.default_solr_params = {
@@ -52,15 +54,18 @@ class CatalogController < ApplicationController
     config.add_facet_field 'subject_facet', :label => 'Subject'
     config.add_facet_field 'presenter_facet', :label => 'Presenter', :limit => 20
     config.add_facet_field 'guest_facet', :label => 'Guest', :limit => 20
-    # config.add_facet_field 'person_facet', :label => 'Person', :limit => 20
+    config.add_facet_field 'producer_facet', :label => 'Producer', :limit => 20
+    config.add_facet_field 'person_facet', :label => 'Person', :show => false
     config.add_facet_field 'object_type_facet', :label => 'Format'
     config.add_facet_field 'pub_date', :label => 'Publication Year', :date => true
     config.add_facet_field 'broadcast_date_facet', :label => 'Broadcast Date', :date => true 
-    config.add_facet_field 'subject_topic_facet', :label => 'Topic', :limit => 20 
+    config.add_facet_field 'subject_topic_facet', :label => 'Topic', :limit => 20
+    config.add_facet_field 'geographical_coverage_facet', :label => 'Place', :limit => 20 
     config.add_facet_field 'language_facet', :label => 'Language', :limit => true 
     config.add_facet_field 'lc_1letter_facet', :label => 'Call Number' 
     config.add_facet_field 'subject_geo_facet', :label => 'Region' 
     config.add_facet_field 'subject_era_facet', :label => 'Era'  
+    config.add_facet_field 'collection_facet', :label => 'Collection'
 
     # Have BL send all facet field names to Solr, which has been the default
     # previously. Simply remove these lines if you'd rather use Solr request
@@ -77,6 +82,7 @@ class CatalogController < ApplicationController
     config.add_index_field 'author_display', :label => 'Author:' 
     config.add_index_field 'author_vern_display', :label => 'Author:'
     config.add_index_field 'presenter_facet', :label => 'Presenter:'
+    config.add_index_field 'producer_facet', :label => 'Producer:'
     config.add_index_field 'subject_facet', :label => 'Subject:' 
     config.add_index_field 'format', :label => 'Format:'
     config.add_index_field 'object_type_facet', :label => 'Format:' 
@@ -96,8 +102,10 @@ class CatalogController < ApplicationController
     config.add_show_field 'author_vern_display', :label => 'Author:'
     config.add_show_field 'presenter_facet', :label => 'Presenter:'
     config.add_show_field 'guest_facet', :label => 'Guest:'
+    config.add_show_field 'producer_facet', :label => 'Producer:'
     config.add_show_field 'broadcast_date_facet', :label => 'Broadcast Date:'
     config.add_show_field 'subject_facet', :label => 'Subject:'
+    config.add_show_field 'geographical_coverage_facet', :label => 'Place:'
     config.add_show_field 'format', :label => 'Format:'
     config.add_show_field 'object_type_facet', :label => 'Format:' 
     config.add_show_field 'url_fulltext_display', :label => 'URL:'
@@ -158,7 +166,7 @@ class CatalogController < ApplicationController
     #end
 
     config.add_search_field('person') do |field|
-        field.solr_parameters = { }
+        field.solr_parameters = { :'spellcheck.dictionary' => 'person'}
         field.solr_local_parameters = {
           :qf => '$person_qf',
           :pf => '$person_pf',
@@ -189,6 +197,11 @@ class CatalogController < ApplicationController
     # If there are more than this many search results, no spelling ("did you 
     # mean") suggestion is offered.
     config.spell_max = 5
+  end
+
+  def exclude_collection_models(solr_parameters, user_parameters)
+    solr_parameters[:fq] ||= []
+    solr_parameters[:fq] << "-has_model_s:\"info:fedora/afmodel:DRI_Model_Collection\""
   end
 
 end 

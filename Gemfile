@@ -6,8 +6,14 @@ source 'https://rubygems.org'
 gem 'rails', '3.2.11'
 gem 'blacklight', '4.0.0'
 gem 'hydra-head', '5.2.0'
-gem 'dri_data_models', :git => 'git@dev.forasfeasa.ie:dri_data_models.git'
 
+if ENV['DRI_BUNDLE_ENV'] == "tchpc"
+  gem 'dri_data_models', :git => 'ssh://git@lonsdale.tchpc.tcd.ie/navr/dri_data_models'
+else
+  gem 'dri_data_models', :git => 'git@dev.forasfeasa.ie:dri_data_models.git'
+end
+
+gem 'rails_config'
 gem 'sqlite3', :platforms => :ruby
 
 platforms :jruby do
@@ -27,11 +33,18 @@ platforms :jruby do
   gem 'rake' 
 end
 
+# Devise authentication, and devise-i18n-views to support localisation of the
+# devise forms
 gem 'devise'
+gem 'devise-i18n-views'
 
 gem 'noid', '0.5.5'
 
+# File processing gems
 gem 'mimemagic'
+
+# Language and translation related gems
+gem 'http_accept_language'
 
 # Gems used only for assets and not required
 # in production environments by default.
@@ -40,15 +53,19 @@ group :assets do
   # gem 'coffee-rails', '~> 3.2.1'
 
   # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-  # gem 'therubyracer', :platforms => :ruby
+  gem 'therubyracer', :platforms => :ruby
 
-  # gem 'uglifier', '>= 1.0.3'
+  gem 'uglifier', '>= 1.0.3'
 end
 
 group :development, :test do
   gem 'rspec-rails'
+  gem 'capybara-webkit'
+  gem 'headless'
   gem 'jettywrapper'
   gem 'simplecov'
+  gem 'simplecov-rcov'
+  gem 'railroady'
 
   # guard - autorun of tests during development cycle
   gem 'guard'
@@ -78,7 +95,7 @@ end
 # gem 'jbuilder'
 
 # Use unicorn as the app server
-# gem 'unicorn'
+gem 'unicorn'
 
 # Deploy with Capistrano
 # gem 'capistrano'
@@ -91,3 +108,7 @@ gem "unicode", :platforms => [:mri_18, :mri_19]
 gem "devise-guests", "~> 0.3"
 gem "bootstrap-sass"
 gem "yard"
+
+group :translations do
+  gem 'i18n_sync'
+end

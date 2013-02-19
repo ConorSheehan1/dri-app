@@ -5,7 +5,7 @@
 <% unless @document.more_like_this.empty? %>
 <div class="well" id="sidebar-mlt">
   <ul class="nav nav-list">
-  <li class="nav-header">More Like This</li>
+  <li class="nav-header"><%= t('dri.views.catalog.sidebar.more_like_this') %></li>
     <%= render :collection => @document.more_like_this, :partial => 'show_more_like_this', :as => :document %>
   </ul>
 </div><!--/well -->
@@ -13,7 +13,12 @@
 
 <div class="well" id="sidebar-nav">
   <ul class="nav nav-list">
-  <li class="nav-header">Edit Tools</li>
-    <%= link_to "Edit this record", url_for(:controller => "audios", :action => "edit", :id => @document.id) %>
+  <li class="nav-header"><%= t('dri.views.catalog.sidebar.nav_header') %></li>
+    <li><%= link_to t('dri.views.catalog.links.edit_this_record'), url_for(:controller => "objects", :action => "edit", :id => @document.id), :id => "edit_record" %></li>
+
+  <% if !get_current_collection.nil? %>
+    <%= link_to t('dri.views.objects.links.add_to_collection'), url_for(:controller => "collection_items", :action => "update", :id => @document.id, :collection_id => get_current_collection ), :method => :put, :id => "add_to_collection" %>
+  <% end %>
+
   </ul>
 </div><!--/well -->

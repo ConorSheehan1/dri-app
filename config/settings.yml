@@ -1,0 +1,10 @@
+ingest:
+  steps: [collection, type, ingestmethod, metadata]
+  step_data:
+    collection: [ingestcollection]
+    type: [ingesttype]
+    ingestmethod: [ingestmethod]
+interface:
+  languages: [en, ga]
+dri:
+  files: dri_files

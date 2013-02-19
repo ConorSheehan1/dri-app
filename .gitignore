@@ -14,14 +14,14 @@
 /log/*.log
 /tmp
 
-# Gemfile.lock should be ignored
-Gemfile.lock
-
-# Jetty should be ignored
-/jetty
-
+/script/rnagimport
+/oo*
 /coverage
 /rdoc
 /doc
 .DS_Store
 .yardoc
+
+config/settings.local.yml
+config/settings/*.local.yml
+config/environments/*.local.yml

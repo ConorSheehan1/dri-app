@@ -7,13 +7,20 @@ NuigRnag::Application.routes.draw do
 
   devise_for :users 
 
-  resources :audios
+  resources :objects, :only => ['edit', 'update', 'create']
+  resources :collections do
+    resources :items, :only => ['update', 'destroy'], :controller => "collection_items"
+  end
+  match 'collections/current/:id' => 'collection_items#set_current_collection', :via => :post, :as => :current_collection
+  match 'collections/current/:id' => 'collection_items#clear_current_collection', :via => :delete, :as => :clear_current_collection
 
-  match 'audios/:id/metadata' => 'metadata#show', :via => :get, :as => :audio_metadata
-  match 'audios/:id/metadata' => 'metadata#update', :via => :put
-  match 'audios/:id/file' => 'files#show', :via => :get, :as => :audio_file
-  match 'audios/:id/file' => 'files#create', :via => :post, :as => :new_audio_file
-  match 'ingest' => 'metadata#create', :via => :post  
+  resources :ingest, :only => ['new', 'create']
+
+  match 'objects/:id/metadata' => 'metadata#show', :via => :get, :as => :object_metadata
+  match 'objects/:id/metadata' => 'metadata#update', :via => :put
+  match 'objects/:id/file' => 'files#show', :via => :get, :as => :object_file
+  match 'objects/:id/file' => 'files#create', :via => :post, :as => :new_object_file
+  match 'metadata' => 'metadata#create', :via => :post  
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

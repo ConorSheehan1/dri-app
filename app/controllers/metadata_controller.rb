@@ -27,13 +27,13 @@ class MetadataController < AssetsController
         @object = retrieve_object params[:id]
 
         if @object == nil
-          flash[:notice] = "Please specify a valid object id."
+          flash[:notice] = t('dri.flash.notice.specify_object_id')
         else
             
           if @object.datastreams.has_key?("descMetadata")
             @object.datastreams["descMetadata"].ng_xml = @tmp_xml
           else
-            ds = DRI::Metadata::DublinCoreAudio.from_xml(@tmp_xml)
+            ds = @object.load_from_xml(@tmp_xml)
             @object.add_datastream ds, :dsid => 'descMetadata'
           end
 
@@ -41,14 +41,16 @@ class MetadataController < AssetsController
 
            if @object.valid?
              @object.save
-             flash[:notice] = "Metadata has been successfully updated."
+             flash[:notice] = t('dri.flash.notice.metadata_updated')
            else
-             flash[:alert] = "Invalid object: #{@object.errors.full_messages.inspect}."
+             flash[:alert] = t('dri.flash.alert.invalid_object', :error => @object.errors.full_messages.inspect)
+             raise Exceptions::BadRequest, t('dri.views.exceptions.invalid_metadata')
+             return
            end
         end
       end
     else
-      flash[:notice] = "You must specify a valid file to upload."
+      flash[:notice] = t('dri.flash.notice.specify_valid_file')
     end
 
     redirect_to :controller => "catalog", :action => "show", :id => params[:id]
@@ -61,33 +63,44 @@ class MetadataController < AssetsController
 
     if params.has_key?(:metadata_file) && params[:metadata_file] != nil
       if is_valid_dc?
-        @object = DRI::Model::Audio.new
+
+        if !session[:ingest][:type].blank?
+          @object = DRI::Model::DigitalObject.construct(session[:ingest][:type].to_sym, session[:object_params])
+        else 
+          @object = DRI::Model::Audio.new
+        end
 
           if @object.datastreams.has_key?("descMetadata")
             @object.datastreams["descMetadata"].ng_xml = @tmp_xml
           else
-            ds = DRI::Metadata::DublinCoreAudio.from_xml(@tmp_xml)
+            ds = @object.load_from_xml(@tmp_xml)
             @object.add_datastream ds, :dsid => 'descMetadata'
           end
 
-          # @object.datastreams["descMetadata"].save
+          if !session[:ingest][:collection].blank?
+            @object.governing_collection = Collection.find(session[:ingest][:collection])
+          end
+
           if @object.valid?
             @object.save
-            flash[:notice] = "Audio object has been successfully ingested."
+            flash[:notice] = t('dri.flash.notice.digital_object_ingested')
           else
-            flash[:alert] = "Invalid object: #{@object.errors.full_messages.inspect}."
-            redirect_to :controller => "audios", :action => "new"
+            flash[:alert] = t('dri.flash.alert.invalid_object', :error => @object.errors.full_messages.inspect)
+            raise Exceptions::BadRequest, t('dri.views.exceptions.invalid_metadata')
             return
           end
 
           redirect_to :controller => "catalog", :action => "show", :id => @object.id
           return
+      else
+        raise Exceptions::BadRequest, t('dri.views.exceptions.invalid_metadata')
+        return
       end
     else
-      flash[:notice] = "You must specify a valid file to upload."
+      flash[:notice] = t('dri.flash.notice.specify_valid_file')
     end
 
-    redirect_to :controller => "audios", :action => "new"
+    redirect_to :controller => "ingest", :action => "new"
   end  
 
   # Validates Dublin Core metadata against schema declared in the namespace.
@@ -102,7 +115,7 @@ class MetadataController < AssetsController
       begin
         @tmp_xml = Nokogiri::XML(tmp.read) { |config| config.options = Nokogiri::XML::ParseOptions::STRICT }
       rescue Nokogiri::XML::SyntaxError => e
-        flash[:alert] = "Invalid XML: #{e}"
+        flash[:alert] = t('dri.flash.alert.invalid_xml', :error => e)
         return false
       end
 
@@ -130,7 +143,7 @@ class MetadataController < AssetsController
         end
 
         if (schema_imports.size == 0)
-          flash[:notice] = "The XML file contains no schema to validate against."
+          flash[:notice] = t('dri.flash.notice.no_xml_schema')
         else
           # Create a schema that imports and includes the schema used in the XML
 
@@ -149,14 +162,14 @@ class MetadataController < AssetsController
           if validate_errors == nil || validate_errors.size == 0
 	    result = true
           else
-            flash[:error] = "Validation Errors:<br/>".html_safe+validate_errors.join("<br/>").html_safe
+            flash[:error] = t('dri.flash.error.validation_errors', :error => "<br/>".html_safe+validate_errors.join("<br/>").html_safe)
           end
         end
       else
-        flash[:notice] = "The XML file could not validate against the Dublin Core schema"
+        flash[:notice] = t('dri.flash.notice.schema_validation_error')
       end
    else
-      flash[:notice] = "You must specify a XML file."
+      flash[:notice] = t('dri.flash.notice.specify_xml_file')
    end
 
    return result

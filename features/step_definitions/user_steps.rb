@@ -1,21 +1,31 @@
 Given /^I am logged in as "([^\"]*)"$/ do |login|
   email = "#{login}@#{login}.com"
-  user = User.create(:email => email, :password => "password", :password_confirmation => "password")
+  @user = User.create(:email => email, :password => "password", :password_confirmation => "password")
   visit new_user_session_path
   fill_in("user_email", :with => email) 
   fill_in("user_password", :with => "password") 
   click_button("Sign in")
-  step 'I should see "Log Out"'
+  step 'I should be logged in'
 end
 
 Given /^I am logged in as "([^\"]*)" with password "([^\"]*)"$/ do |login, password|
   email = "#{login}@#{login}.com"
-  user = User.create(:email => email, :password => password, :password_confirmation => password)
+  @user = User.create(:email => email, :password => password, :password_confirmation => password)
   visit new_user_session_path
   fill_in("user_email", :with => email)
   fill_in("user_password", :with => password)
   click_button("Sign in")
-  step 'I should see "Log Out"'
+  step 'I should be logged in'
+end
+
+Given /^I am logged in as "([^\"]*)" with language "([^\"]*)"$/ do |login, lang|
+  email = "#{login}@#{login}.com"
+  @user = User.create(:email => email, :password => "password", :password_confirmation => "password", :locale => lang) 
+  visit new_user_session_path
+  fill_in("user_email", :with => email)
+  fill_in("user_password", :with => "password")
+  click_button("Sign in")
+  step 'I should be logged in'
 end
 
 Then /^I should see an edit link for "([^\"]*)"$/ do |login|
@@ -74,11 +84,11 @@ When /^I submit the User Sign in page with credentials "([^\"]*)" and "([^\"]*)"
 end
 
 Then /^I should be logged in$/ do
-step 'I should see a link to "/users/sign_out" with text "Log Out"'
+step 'I should see a link to sign out'
 end
 
 Then /^I should be logged out$/ do
-  step 'I should see a link to "/users/sign_in" with text "Login"'
+  step 'I should see a link to sign in'
 end
 
 When /^I follow the edit link for "([^\"]*)"$/ do |login|

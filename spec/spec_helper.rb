@@ -1,3 +1,12 @@
+require 'simplecov'
+require 'simplecov-rcov'
+require 'capybara-webkit'
+
+Capybara.javascript_driver = :webkit
+
+SimpleCov.formatter = SimpleCov::Formatter::RcovFormatter
+SimpleCov.start
+
 require 'rubygems'
 require 'spork'
 #uncomment the following line to use spork with the debugger
@@ -52,7 +61,6 @@ ENV["RAILS_ENV"] ||= 'test'
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
 require 'rspec/autorun'
-require 'simplecov'
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.

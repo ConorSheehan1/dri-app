@@ -1,5 +1,6 @@
 module FieldRenderHelper
 
+  # Returns the default html field separator characters
   def field_value_separator
     '<br/>'
   end
@@ -34,7 +35,7 @@ module FieldRenderHelper
      facet = args[:facet]
      search_arg = "f[" << facet << "][]"
 
-     if ((facet == 'guest_facet') || (facet == 'presenter_facet'))
+     if ((facet == 'guest_facet') || (facet == 'presenter_facet') || (facet == 'producer_facet'))
        search_arg = "f[person_facet][]"
      end
 
