@@ -1,27 +1,9 @@
-@collections @req-17
+@collections @req-17 @done @req-61 @req-63
 Feature:
   In order to manage my Digital Objects
   As an authorized user
   I want to be able to add my Digital Objects to a collection
   And to retrieve my Digital Objects by collection
-
-  What comes first?
-    - collections or objects?
-	  - collections first? - DG
-    - from user perspective - users will want to view collections (which is curated)
-	- need to know the type of user, researchers are different from general public
-	  - focus on depositor for req-17
-	- hydra frame work supports collections but objects can't be in two collections due to access policies
-
-  Implementation plan/goal
-	- One level of depth in repository for collections
-	  - new data model (collections model???) (DG)
-	    - need two rights metadata - one for "itself" and one for "managed objects"
-		- need for cucumber scenario
-	    - Objects are only in one collection
-		- Need for organisation/institution name/code
-
-  Note: ingest will need to know about collections when committing objects
 
 Background:
   Given I am logged in as "user1"
@@ -39,41 +21,45 @@ Scenario: Constructing a valid collection
   And I press the button to create a collection
   Then I should see a success message for creating a collection
 
-Scenario: Adding a Digital Object in a governing collection
-  Given a Digital Object with pid "dri:obj1" and title "Object 1"
-  And a collection with pid "dri:coll1"
-  When I add the Digital Object "dri:obj1" to the collection "dri:coll1" as type governing
-  Then the collection "dri:coll1" should contain the Digital Object "dri:obj1" as type governing
+Scenario Outline: Adding a Digital Object in a governing/non-governing collection
+  Given a Digital Object with pid "<object_pid>" and title "<object_title>"
+  And a collection with pid "<collection_pid>"
+  When I add the Digital Object "<object_pid>" to the collection "<collection_pid>" as type "<governance_type>"
+  Then the collection "<collection_pid>" should contain the Digital Object "<object_pid>" as type "<governance_type>"
 
-Scenario: Adding a Digital Object to a non-governing collection
-  Given a Digital Object with pid "dri:obj2" and title "Object 2"
-  And a collection with pid "dri:coll2"
-  When I add the Digital Object "dri:obj2" to the collection "dri:coll2" as type non-governing
-  Then the collection "dri:coll2" should contain the Digital Object "dri:obj2" as type non-governing
+  Examples:
+    | object_pid | object_title | collection_pid | governance_type |
+    | dri:obj1   | Object 1     | dri:coll1      | governing       |
+    | dri:obj2   | Object 2     | dri:coll1      | governing       |
+    | dri:obj3   | Object 3     | dri:coll2      | non-governing   |
+    | dri:obj4   | Object 4     | dri:coll2      | non-governing   |
 
-Scenario: Creating Digital Object in a governing collection using the web forms
-  Given a collection with pid "dri:coll3"
-  When I create a Digital Object in the collection "dri:coll3"
-  Then the collection "dri:coll3" should contain the new digital object
+Scenario Outline: Creating Digital Object in a governing collection using the web forms
+  Given a collection with pid "<collection_pid>" created by "user1@user1.com"
+  When I create a Digital Object in the collection "<collection_pid>"
+  Then the collection "<collection_pid>" should contain the new digital object
 
-@javascript
+  Examples:
+    | object_pid | object_title | collection_pid | governance_type |
+    | dri:obj1   | Object 1     | dri:coll1      | governing       |
+
 Scenario: Adding a Digital Object to a non-governing collection using the web forms
   Given a Digital Object with pid "dri:obj4" and title "Object 4"
-  And a collection with pid "dri:coll4"
+  And a collection with pid "dri:coll4" created by "user1@user1.com"
   When I add the Digital Object "dri:obj4" to the non-governing collection "dri:coll4" using the web forms
-  And I go to the show page for the collection "dri:coll4"
+  And I go to the "collection" "show" page for "dri:coll4"
   Then I should see the Digital Object "dri:obj4" as part of the collection
 
 Scenario: Removing a Digital Object from a non-governing collection using the web forms
   Given a Digital Object with pid "dri:obj5" and title "Object 5"
   And a collection with pid "dri:coll5"
-  When I add the Digital Object "dri:obj5" to the collection "dri:coll5" as type non-governing
-  Then the collection "dri:coll5" should contain the Digital Object "dri:obj5" as type non-governing
-  When I go to the show page for the collection "dri:coll5"
+  When I add the Digital Object "dri:obj5" to the collection "dri:coll5" as type "non-governing"
+  Then the collection "dri:coll5" should contain the Digital Object "dri:obj5" as type "non-governing"
+  When I go to the "collection" "show" page for "dri:coll5"
   Then I should see the Digital Object "dri:obj5" as part of the collection
   When I press the remove from collection button for Digital Object "dri:obj5"
   Then I should see a success message for removing an object from a collection
-  When I go to the show page for the collection "dri:coll5"
+  When I go to the "collection" "show" page for "dri:coll5"
   Then I should not see the Digital Object "dri:obj5" as part of the non-governing collection
 
 Scenario: Committing a Digital Object which is a duplicate of an existing Digital Object in the same collection

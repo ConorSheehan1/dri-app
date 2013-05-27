@@ -35,6 +35,34 @@ Given /^I have created a (pdfdoc|audio) object$/ do |type|
   }
 end
 
+Given /^I have created an "(.*?)" object with metadata "(.*?)" in the collection "(.*?)"$/ do |type, metadata, collection_title|
+  steps %{
+    Given I am on the new Digital Object page
+    When I select the text "#{collection_title}" from the selectbox for ingest collection
+    And I press the button to continue
+    And I select "#{type}" from the selectbox for object type
+    And I press the button to continue
+    And I select "upload" from the selectbox for ingest methods
+    And I press the button to continue
+    And I attach the metadata file "#{metadata}"
+    And I press the button to ingest metadata
+  }
+end
+
+Given /^I have created an "(.*?)" object with title "(.*?)" in the collection "(.*?)"$/ do |type, title, collection_title|
+  steps %{
+    Given I am on the new Digital Object page
+    When I select the text "#{collection_title}" from the selectbox for ingest collection
+    And I press the button to continue
+    And I select "#{type}" from the selectbox for object type
+    And I press the button to continue
+    And I select "input" from the selectbox for ingest methods
+    And I press the button to continue
+    When I enter valid metadata with title "#{title}"
+    And I press the button to continue
+  }
+end
+ 
 Given /^I have created a collection$/ do
   steps %{
     Given I am on the my collections page
@@ -63,12 +91,25 @@ Given /^I have added an audio file$/ do
   }
 end
 
+When /^I add the asset "(.*)" to "(.*?)"$/ do |asset, pid|
+  steps %{
+    When I go to the "object" "edit" page for "#{pid}"
+    And I attach the asset file "#{asset}"
+    And I press the button to upload a file
+    Then I should see a success message for file upload
+  }
+end
+
 Given /^(?:|I )am on (.+)$/ do |page_name|
   visit path_to(page_name)
 end
 
-When /^(?:|I )go to (.+)$/ do |page_name|
+When /^(?:|I )go to "([^"]*)"$/ do |page_name|
   visit path_to(page_name)
+end
+
+When /^(?:|I )go to the "([^"]*)" "([^"]*)" page for "([^"]*)"$/ do |type, page, pid|
+  visit path_for(type, page, pid)
 end
 
 When /^(?:|I )follow the link to (.+)$/ do |link_name|
@@ -93,8 +134,9 @@ When /^I attach the metadata file "(.*?)"$/ do |file|
   attach_file("metadata_file", File.join(cc_fixture_path, file))
 end
 
-When /^I enter valid metadata$/ do
-  interface.enter_valid_metadata
+When /^I enter valid metadata(?: with title "(.*?)")?$/ do |title|
+  title ||= "A Test Object"
+  interface.enter_valid_metadata(title)
 end
 
 When /^I enter modified metadata$/ do
@@ -111,12 +153,13 @@ When /^I select a collection$/ do
   select_by_value(second_option, :from => "ingestcollection")
 end
 
-Then /^I should see the valid metadata$/ do
-  interface.has_valid_metadata?
-end
-
-Then /^I should see the modified metadata$/ do
-  interface.has_modified_metadata?
+Then /^I should see the (valid|modified) metadata$/ do |type|
+  case type
+    when "valid"
+      interface.has_valid_metadata?
+    when "modified"
+      interface.has_modified_metadata?
+  end
 end
 
 Then /^I press "(.*?)"$/ do |button|
@@ -135,12 +178,25 @@ Then /^(?:|I )should not see a link to (.+)$/ do |link|
   page.should_not have_link(link_to_id(link))
 end
 
-Then /^(?:|I )should see a success message for (.+)$/ do |message|
+Then /^(?:|I )should see a "([^"]*)"$/ do |element|
+  case element
+    when "rights statement"
+      interface.has_rights_statement?
+    when "licence"
+      interface.has_licence?
+  end
+end
+
+Then /^(?:|I )should see a (success|failure) message for (.+)$/ do |sucess_failure,message|
   page.should have_selector ".alert", text: flash_for(message)
 end
 
-Then /^(?:|I )should see an error message for (.+)$/ do |message|
+Then /^(?:|I )should see a message for (.+)$/ do |message|
   page.should have_selector ".alert", text: flash_for(message)
+end
+
+Then /^(?:|I )should not see a message for (.+)$/ do |message|
+  page.should_not have_selector ".alert", text: flash_for(message)
 end
 
 Then /^(?:|I )should see "([^"]*)"(?: within "([^"]*)")?$/ do |text, selector|
@@ -218,4 +274,25 @@ end
 
 Then /^I should see the message "([^\"]*)"$/ do |message| 
   page.should have_selector ".alert", text: message
+end
+
+Then /^I should not see the message "([^\"]*)"$/ do |message|
+  page.should_not have_selector ".alert", text: message
+end
+
+Then /^I should (not )?see an element "([^"]*)"$/ do |negate, selector|
+  expectation = negate ? :should_not : :should
+  page.send(expectation, have_css(selector))
+end
+
+Then /^I should see the iframe "([^\"]+)"$/ do |iframe_name|
+  within_frame(iframe_name){
+    sleep 5
+    page.status_code.should be 200
+  }
+end
+
+Then /^I should see a section with id "([^\"]+)"$/ do |div_name|
+  selector = "div#" + div_name
+  page.should have_selector(selector)
 end

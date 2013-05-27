@@ -1,7 +1,7 @@
 require 'exceptions'
 
 class ApplicationController < ActionController::Base
-  before_filter :set_locale
+  before_filter :set_locale, :set_cookie
 
   include HttpAcceptLanguage
 
@@ -24,6 +24,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery
 
   rescue_from Exceptions::BadRequest, :with => :render_bad_request
+  rescue_from Exceptions::InternalError, :with => :render_internal_error
 
   def set_locale
     if current_user
@@ -33,4 +34,9 @@ class ApplicationController < ActionController::Base
     end
     I18n.locale = I18n.default_locale if I18n.locale.blank?
   end
+
+  def set_cookie
+    cookies[:accept_cookies] = "yes" if current_user
+  end
+
 end

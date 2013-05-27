@@ -26,28 +26,37 @@ module FlashTranslator
     when /invalid file type/
       I18n.t('dri.flash.alert.invalid_file_type', :locale => @user.locale)
 
+    when /virus detected/
+      I18n.t('dri.flash.alert.virus_detected', :virus => 'Eicar-Test-Signature', :locale => @user.locale)
+
     when /invalid email or password/
       # User is not yet logged in and has no @user, will default to locale 'en'
       I18n.t('devise.failure.invalid', :locale => "en")
 
     when /new account/
       # User is not yet logged in and has no @user, will default to locale 'en'
-      I18n.t('devise.registrations.signed_up', :locale => "en")
+      I18n.t('user_groups.users.signup', :locale => "en")
 
     when /duplicate email/
-      strip_vars( I18n.t('activerecord.errors.models.user.attributes.email.taken', :locale => "en") )
+      strip_vars( I18n.t('activerecord.errors.models.user_group/user.attributes.email.taken', :locale => "en") )
 
     when /password mismatch/
-      strip_vars( I18n.t('activerecord.errors.models.user.attributes.password.confirmation', :locale => "en") )
+      strip_vars( I18n.t('activerecord.errors.models.user_group/user.attributes.password.confirmation', :locale => "en") )
 
     when /too short password/
-      strip_vars( I18n.t('activerecord.errors.models.user.attributes.password.too_short', :locale => "en") )
+      strip_vars( I18n.t('activerecord.errors.models.user_group/user.attributes.password.too_short', :locale => "en") )
 
     when /creating a collection/
       I18n.t('dri.flash.notice.collection_created', :locale => @user.locale)
 
     when /removing an object from a collection/
       I18n.t('dri.flash.notice.removed_from_collection', :locale => @user.locale)
+
+    when /cookie notification/
+      I18n.t('dri.application.cookies.header', :locale => "en")
+
+    when /invalid profile image/
+      strip_vars( I18n.t("user_groups.users.errors.validation_image_link", :locale => "en") )
 
     else "Unknown"
  

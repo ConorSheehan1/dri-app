@@ -8,18 +8,28 @@ class CollectionItemsController < AssetsController
     @collection.items << @object
 
     if @collection.save
-      respond_to do |format|
-        format.html { flash[:notice] = t('dri.flash.notice.added_to_collection')
-          redirect_to :controller => "collections", :action => "show", :id => params[:collection_id] }
-        format.json { render :json => @collection }
+      if request.xhr?
+        render :text => "[]", :status => "200"
+        return
+      else
+        respond_to do |format|
+          format.html { flash[:notice] = t('dri.flash.notice.added_to_collection')
+            redirect_to :controller => "collections", :action => "show", :id => params[:collection_id] }
+          format.json { render :json => @collection }
+        end
       end
     else
-      respond_to do |format|
+      if request.xhr?
+        render :text => "[]", :status => "500"
+        return
+      else
+        respond_to do |format|
         format.html {
           flash[:alert] = t('dri.flash.alert.not_added_to_collection') 
           redirect_to :controller => "objects", :action => "edit", :id => params[:object_id]
         }
         format.json { render :json => @collection.errors}
+        end
       end
     end
 
@@ -33,17 +43,27 @@ class CollectionItemsController < AssetsController
     @collection.items.delete(@object)
     
     if @object.save
-      respond_to do |format|
-        format.html { flash[:notice] = t('dri.flash.notice.removed_from_collection')
-        }
-        format.json { render :json => @collection }
+      if request.xhr?
+        render :text => "[]", :status => "200"
+        return
+      else
+        respond_to do |format|
+          format.html { flash[:notice] = t('dri.flash.notice.removed_from_collection')
+          }
+          format.json { render :json => @collection }
+        end
       end
     else
-      respond_to do |format|
-        format.html {
-          flash[:alert] = t('dri.flash.alert.not_removed_from_collection')
-        }
-        format.json { render :json => @object.errors}
+      if request.xhr?
+        render :text => "[]", :status => "500"
+        return
+      else
+        respond_to do |format|
+          format.html {
+            flash[:alert] = t('dri.flash.alert.not_removed_from_collection')
+          }
+          format.json { render :json => @object.errors}
+        end
       end
     end
   
@@ -51,6 +71,7 @@ class CollectionItemsController < AssetsController
   end
 
   def set_current_collection
+
     session[:current_collection] = params[:id]
 
     respond_to do |format|
@@ -59,9 +80,11 @@ class CollectionItemsController < AssetsController
           redirect_to :controller => "collections", :action => "index"
         }
     end
+
   end
 
   def clear_current_collection
+
     session.delete(:current_collection)    
 
     respond_to do |format|
@@ -70,6 +93,7 @@ class CollectionItemsController < AssetsController
           redirect_to :controller => "collections", :action => "index"
         }
     end
+
   end
 
 end

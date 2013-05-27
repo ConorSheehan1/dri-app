@@ -7,7 +7,7 @@ module ApplicationHelper
   end
   
   def get_collections
-    collections = DRI::Model::Collection.all
+    collections = DRI::Model::Collection.find(:depositor => current_user.to_s)
     collections.collect{ |c| [c.title, c.pid] }
   end
 
@@ -23,6 +23,10 @@ module ApplicationHelper
     else
       return nil
     end
+  end
+
+  def existing_collection_for( object_id )
+    get_current_collection.items.to_a.find {|b| b.id == object_id}
   end
 
   def get_partial_name( object )

@@ -3,13 +3,10 @@
 
 require 'stepped_forms'
 
-class IngestController < ApplicationController
-  include Blacklight::Catalog
-  include Hydra::Controller::ControllerBehavior
-  include DRI::Model
+class IngestController < AssetsController
   include SteppedForms
 
-  before_filter :authenticate_user!, :only => [:create, :new, :edit, :update]
+  before_filter :authenticate_user!, :only => [:create, :new]
 
   # Form for a new dri_data_models model.
   #
@@ -22,16 +19,18 @@ class IngestController < ApplicationController
     end
   end
 
-  # Creates a new model using the parameters passed in the request.
+  # Handles the ingest process using partial forms
   #
   def create
-    #Merge our object data so far and create the model
-    session[:object_params].deep_merge!(params[:dri_model]) if params[:dri_model]
-
     if !session[:ingest][:type].blank?
-      @document_fedora = DRI::Model::DigitalObject.construct(session[:ingest][:type].to_sym, session[:object_params])
+      @type = session[:ingest][:type]
+      @document_fedora = DRI::Model::DigitalObject.construct(session[:ingest][:type].to_sym, params[:dri_model])
     else
-      @document_fedora = DRI::Model::DigitalObject.construct(:audio, session[:object_params])
+      @document_fedora = DRI::Model::DigitalObject.construct(:audio, params[:dri_model])
+    end
+
+    if !session[:ingest][:collection].blank?
+      @collection = session[:ingest][:collection]
     end
 
     @ingest_methods = get_ingest_methods

@@ -25,6 +25,9 @@ module LinkTranslator
     when /unlock instructions not sent/
       "unlock_not_sent"
 
+    when /view my account/
+      "view_account"
+
     when /edit my account/
       "edit_account"
 
@@ -42,6 +45,12 @@ module LinkTranslator
 
      when /add to collection/
        "add_to_collection"
+
+     when /download metadata/
+       "download_metadata"
+
+     when /download asset/
+       "download_asset"
 
     else "Unknown"
  

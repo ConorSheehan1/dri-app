@@ -19,20 +19,22 @@ module PathTranslator
     when /show page for the collection "(.+)"/
       collection_path($1)
 
-    when /edit user page/
-      edit_user_registration_path
-
     when /the home page/
       root_path
 
     when /sign in/
-     new_user_session_path
+     user_group.new_user_session_path
+
+    # This should not be used as we cannot send a delete
+    # Instead we should follow the sign out link
+    when /sign out/
+      user_group.destroy_user_session_path
 
     when /User Signin page/
-      new_user_session_path
+      user_group.new_user_session_path
 
     when /User Sign up page/
-      new_user_registration_path
+      user_group.new_user_path
 
     when /new Collection page/
       new_collection_path
@@ -51,6 +53,37 @@ module PathTranslator
 
     end
   end
+
+
+  def path_for(type, page, pid)
+
+    case type
+
+    when /object/
+
+      case page
+      when /show/
+          catalog_path(pid)
+      when /edit/
+          edit_object_path(pid)
+      else
+        raise('Unknown route')
+        
+      end
+
+    when /collection/
+      case page 
+      when /show/
+        collection_path(pid)
+      else
+        raise('Unknown route')
+      end
+
+    else
+      raise('Unknown route')
+    end
+
+  end   
 
 end
 

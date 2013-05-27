@@ -5,12 +5,14 @@ source 'https://rubygems.org'
 
 gem 'rails', '3.2.11'
 gem 'blacklight', '4.0.0'
-gem 'hydra-head', '5.2.0'
+gem 'hydra-head', '6.1.0'
 
 if ENV['DRI_BUNDLE_ENV'] == "tchpc"
   gem 'dri_data_models', :git => 'ssh://git@lonsdale.tchpc.tcd.ie/navr/dri_data_models'
+  gem 'user_group', :git => 'ssh://git@lonsdale.tchpc.tcd.ie/navr/user_group'
 else
   gem 'dri_data_models', :git => 'git@dev.forasfeasa.ie:dri_data_models.git'
+  gem 'user_group', :git => 'git@dev.forasfeasa.ie:user_group.git'
 end
 
 gem 'rails_config'
@@ -33,18 +35,25 @@ platforms :jruby do
   gem 'rake' 
 end
 
-# Devise authentication, and devise-i18n-views to support localisation of the
-# devise forms
-gem 'devise'
-gem 'devise-i18n-views'
-
 gem 'noid', '0.5.5'
+
+gem 'resque'
+
+# Storage-related gems
+gem 'aws-s3'
+
+#gem 'clamav'
 
 # File processing gems
 gem 'mimemagic'
 
 # Language and translation related gems
 gem 'http_accept_language'
+gem 'it'
+
+gem 'jquery-rails'
+gem 'jquery-ui-rails'
+gem 'jquery-cookie-rails'
 
 # Gems used only for assets and not required
 # in production environments by default.
@@ -53,19 +62,21 @@ group :assets do
   # gem 'coffee-rails', '~> 3.2.1'
 
   # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-  gem 'therubyracer', :platforms => :ruby
+  gem 'execjs'
 
   gem 'uglifier', '>= 1.0.3'
 end
 
 group :development, :test do
   gem 'rspec-rails'
-  gem 'capybara-webkit'
-  gem 'headless'
+  gem 'poltergeist'
   gem 'jettywrapper'
   gem 'simplecov'
   gem 'simplecov-rcov'
   gem 'railroady'
+  gem 'show_me_the_cookies'
+  gem 'better_errors'
+  gem 'binding_of_caller'
 
   # guard - autorun of tests during development cycle
   gem 'guard'
@@ -77,7 +88,6 @@ group :development, :test do
   gem 'rb-fsevent', :require => false
   gem 'rb-fchange', :require => false 
 end
-gem 'jquery-rails'
 
 group :test do
   gem 'cucumber-rails', require: false
@@ -97,15 +107,10 @@ end
 # Use unicorn as the app server
 gem 'unicorn'
 
-# Deploy with Capistrano
-# gem 'capistrano'
-
 # To use debugger
 # gem 'debugger'
 
 gem "unicode", :platforms => [:mri_18, :mri_19]
-
-gem "devise-guests", "~> 0.3"
 gem "bootstrap-sass"
 gem "yard"
 

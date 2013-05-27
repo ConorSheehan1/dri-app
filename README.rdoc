@@ -3,6 +3,8 @@
 This code in its current state is not to be redistributed to parties
 outside of DRI.
 
+THIS IS FOR ADMINS ONLY, THERE IS A SEPARATE HEAD FOR NON-ADMIN USERS
+
 == Welcome to nuig-rnag
 
 This repository contains the proto-type of a Hydra-Head which targets the
@@ -19,6 +21,11 @@ For testing and development you will need to bootstrap the project
   $ git submodule update --init --recursive
   $ bundle
   $ bundle exec rake db:migrate
+  $ bundle exec rake db:seed
+  $ bundle exec rake jetty:config
+
+  Dont forget to prepare the test database with
+    $ bundle exec rake db:test:prepare
 
 To start the application for demo purposes
 
@@ -36,7 +43,7 @@ To run the functional tests
 
   $ cd nuig-rnag
   $ rake jetty:start
-  $ rake cucumber
+  $ rake cucumber or bundle exec cucumber
 
 Additional information can be found by reading up on the drirepo,
 nuig-rnag, rspec, cucumber and rails documentation.
@@ -52,8 +59,11 @@ are changed.
   $ cd nuig-rnag
   $ bundle exec guard
 
-Xvfb and QT is required to install all the dependancies, it is required
-for capybara-webkit (front end testing of interface).
+The poltergeist gem is required for testing, as a result phantomjs binary
+to run poltergeist.
+
+* https://github.com/jonleighton/poltergeist
+* https://github.com/ariya/phantomjs
 
 == Translations
 
@@ -70,3 +80,111 @@ key will be the English text.
 To merge all files use
 
   $ rake locales:mergeall
+
+== Settings.yml
+
+This is where the application specific settings are located
+
+  config/settings.yml
+
+Please view and edit this file as needed before deploying the application.
+
+== Background jobs
+
+The application includes a queueing system based on Resque and Redis to allow
+asynchronous processing of background jobs. This introduces the following dependencies:
+
+  * Redis (server for the queueing system)
+  * ffmpeg (video file processing tool)
+
+The file processing tools should be installed locally with the hydra-head.
+
+For testing purposes Redis can be installed locally and started with the command
+
+  $ sudo redis-server /opt/local/etc/redis.conf
+
+To start the worker to process jobs run
+
+  $ bundle exec rake resque:work QUEUE="*"
+
+To view your queues (for debugging purposes) run 
+
+  $ resque-web -x
+
+This should pop up a browser window looking at localhost:5678 (if not open one). Here
+you can the status of your queues and jobs.
+
+The worker code is currently in lib/workers/.
+
+Note that the queuing code is stubbed for the Cucumber tests so you do not need a redis
+host running in order to run the tests.
+
+== ClamAV
+
+To enable virus scanning ClamAV needs to be installed. 
+
+  $ sudo port install clamav
+
+You will need to create the configuration file freshclam.conf in /opt/local/etc. There is an example
+file in /opt/local/etc/example-freshclam.conf. Set the directory for the database files and the log
+
+  DatabaseDirectory /opt/local/share/clamav
+  UpdateLogFile /opt/local/var/log/clamav/freshclam.log
+
+Update the virus database
+
+  $ sudo freshclam
+
+Install the clamav Ruby gem
+
+  $ gem install clamav -- --with-cflags=`clamav-config --cflags` --with-ldflags=`clamav-config --libs`
+
+Add the gem to the GemFile
+
+  gem 'clamav'
+
+Run bundler. Virus scanning should now take place when an asset is uploaded.
+
+== Storage
+
+Surrogate files are stored using the Ceph S3 interface. To create surrogates
+you will need a Ceph instance running. A Ceph VM is available in the drirepo
+repository. To start up Ceph run
+
+  $ vagrant up ceph
+
+When the VM is running, log in with 
+
+  $ vagrant ssh ceph
+
+Then create a user with no max bucket limit as follows:
+
+  $ radosgw-admin user create --uid=johndoe --display-name="John Doe" --email=john@example.com --max-buckets=0
+
+This will return an access_key and secret_key which must be added
+to the hydra head's config/settings.yml or config/settings.local.yml file as follows:
+
+  S3:
+    server: 10.0.1.201
+    access_key_id: 4WP751XIFXBH9G97DD91
+    secret_access_key: v6tX8bZSeN9IRJAcelHLnQFrsYV8ojxgWa7rn0uz
+
+Note that the keys should be pasted in as they appear in the output of the radosgw-admin command,
+but all '\' characters should be stripped.
+
+Note that the storage code is stubbed for the Cucumber tests, but you must have a ceph
+host available and configured in order to run the rspec tests.
+
+== Going into production
+
+Edit config/solr.yml config/fedora.yml config/database.yml and put in
+the correct production servers into place.
+
+Some steps required to be run before a production env is ready to go...
+
+  $ rake RAILS_ENV=production assets:precompile
+  $ rake RAILS_ENV=production db:schema:load
+  $ rake RAILS_ENV=production db:migrate
+
+The above assumes a production ready instance of mysql, solr,
+fedora-commons and mod_passenger.

@@ -8,3 +8,24 @@ interface:
   languages: [en, ga]
 dri:
   files: dri_files
+queue:
+  audio: [CreateChecksums, CreateMp3, CreateOgg]
+  pdfdoc: [CreateChecksums, FullTextIndex]
+plugins:
+  ffmpeg_path: /opt/local/bin/ffmpeg
+mp3_out_options:
+  codec: # default is for ffmpeg to auto-detect appropriate codec, this should be good for most scenarios
+  strip_metadata: "yes" # default is to preserve global metadata
+  channel: "2" # default is same as input file
+  bitrate: "96k" # default is same as input file
+  frequency: "44100" # default is same as input file
+ogg_out_options:
+  codec: libvorbis # Default for ogg will produce very large files 
+  strip_metadata: "yes" # default is preserve global metadata
+  channel: "2" # default is same as input file
+  bitrate: "96k" # default is same as input file
+  frequency: "44100" # default is same as input file
+S3:
+  server: 10.0.1.201
+  access_key_id: FIXME
+  secret_access_key: FIXME

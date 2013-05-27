@@ -4,16 +4,18 @@ SimpleCov.start
 require 'rubygems'
 require 'spork'
 require 'i18n'
-require 'capybara-webkit'
+require 'capybara/poltergeist'
+require 'cucumber/rspec/doubles'
+
 #uncomment the following line to use spork with the debugger
 #require 'spork/ext/ruby-debug'
 
-Capybara.javascript_driver = :webkit
+Capybara.javascript_driver = :poltergeist
 
-if Capybara.javascript_driver == :webkit
-  require 'headless'
-  headless = Headless.new
-  headless.start
+Capybara.register_driver :poltergeist do |app|
+  Capybara::Poltergeist::Driver.new(app,
+    :timeout => 120,
+    :debug => false)
 end
 
 Spork.prefork do
@@ -94,7 +96,7 @@ ActionController::Base.allow_rescue = false
 # Remove/comment out the lines below if your app doesn't have a database.
 # For some databases (like MongoDB and CouchDB) you may need to use :truncation instead.
 begin
-  DatabaseCleaner.strategy = :transaction
+  DatabaseCleaner.strategy = :truncation
 rescue NameError
   raise "You need to add database_cleaner to your Gemfile (in the :test group) if you wish to use it."
 end
@@ -132,4 +134,6 @@ end
 
 Before do
   require 'factory_girl'
+  S3Interface::Bucket.any_instance.stub(:create_bucket)
+  BackgroundTasks::QueueManager.any_instance.stub(:process)
 end

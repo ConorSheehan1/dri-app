@@ -1,16 +1,8 @@
-Before('@collections', '@construct', '@web') do
-  clean_repo
-end
-
-After('@collections', '@construct', '@web') do
-  clean_repo
-end
-
-Before('@users') do
-  DatabaseCleaner.strategy = :truncation
+Before do
   DatabaseCleaner.start
 end
 
-After('@users') do
+After do
   DatabaseCleaner.clean
+  clean_repo
 end
