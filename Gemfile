@@ -76,7 +76,7 @@ group :development, :test do
   gem 'railroady'
   gem 'show_me_the_cookies'
   gem 'better_errors'
-  gem 'binding_of_caller'
+  gem 'binding_of_caller', :platforms => :ruby
 
   # guard - autorun of tests during development cycle
   gem 'guard'
@@ -105,7 +105,7 @@ end
 # gem 'jbuilder'
 
 # Use unicorn as the app server
-gem 'unicorn'
+#gem 'unicorn'
 
 # To use debugger
 # gem 'debugger'
