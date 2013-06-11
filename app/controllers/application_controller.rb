@@ -1,7 +1,7 @@
 require 'exceptions'
 
 class ApplicationController < ActionController::Base
-  before_filter :set_locale, :set_cookie
+  before_filter :set_locale, :set_cookie, :authenticate_user!
 
   include HttpAcceptLanguage
 
@@ -23,9 +23,10 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery
 
-  rescue_from Exceptions::BadRequest, :with => :render_bad_request
   rescue_from Exceptions::InternalError, :with => :render_internal_error
-
+  rescue_from Exceptions::BadRequest, :with => :render_bad_request
+  rescue_from Hydra::AccessDenied, :with => :render_access_denied
+  
   def set_locale
     if current_user
       I18n.locale = current_user.locale
@@ -39,4 +40,7 @@ class ApplicationController < ActionController::Base
     cookies[:accept_cookies] = "yes" if current_user
   end
 
+  def enforce_permissions!(action, id_or_object)
+    #Do nothing
+  end
 end

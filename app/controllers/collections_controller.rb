@@ -27,6 +27,7 @@ class CollectionsController < AssetsController
   # Creates a new model.
   #
   def new
+    enforce_permissions!("create", DRI::Model::Collection)
     @collection = DRI::Model::Collection.new
 
     respond_to do |format|
@@ -37,6 +38,7 @@ class CollectionsController < AssetsController
   # Edits an existing model.
   #
   def edit
+    enforce_permissions!("edit",params[:id])
     @collection = retrieve_object(params[:id])
 
     respond_to do |format|
@@ -47,6 +49,7 @@ class CollectionsController < AssetsController
   # Retrieves an existing model.
   #
   def show
+    enforce_permissions!("show",params[:id])
     @collection = retrieve_object(params[:id])
 
     respond_to do |format|
@@ -65,8 +68,19 @@ class CollectionsController < AssetsController
   # Updates the attributes of an existing model.
   #
   def update
+    #TODO:: Update Access Controls page
+    ###Update depending on whats change
+    if params[:dri_model_collection][:manager_groups_string].present? or params[:dri_model_collection][:manager_users_string].present?
+      enforce_permissions!("manage_collection", params[:id])
+   else
+      enforce_permissions!("edit",params[:id])
+    end
+
     @collection = retrieve_object(params[:id])
     
+    #Temp delete embargo [Waiting for hydra bug fix]
+    params[:dri_model_collection].delete(:embargo)
+
     @collection.update_attributes(params[:dri_model_collection])
     respond_to do |format|
       flash[:notice] = t('dri.flash.notice.updated', :item => params[:id])
@@ -77,8 +91,11 @@ class CollectionsController < AssetsController
   # Creates a new model using the parameters passed in the request.
   #
   def create
+    enforce_permissions!("create",DRI::Model::Collection)
     @collection = DRI::Model::Collection.new(params[:dri_model_collection])
+    #Clears permissions for current_user so do first
     @collection.apply_depositor_metadata(current_user.to_s)
+    @collection.manager_users_string=current_user.to_s
 
     respond_to do |format|
       if @collection.save
