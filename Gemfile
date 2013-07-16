@@ -11,12 +11,13 @@ if ENV['DRI_BUNDLE_ENV'] == "tchpc"
   gem 'dri_data_models', :git => 'ssh://git@lonsdale.tchpc.tcd.ie/navr/dri_data_models'
   gem 'user_group', :git => 'ssh://git@lonsdale.tchpc.tcd.ie/navr/user_group'
 else
-  gem 'dri_data_models', :git => 'git@dev.forasfeasa.ie:dri_data_models.git'
-  gem 'user_group', :git => 'git@dev.forasfeasa.ie:user_group.git'
+  gem 'dri_data_models', :git => 'git@dev.forasfeasa.ie:dri_data_models.git', :branch => 'develop'
+  gem 'user_group', :git => 'git@dev.forasfeasa.ie:user_group.git', :branch => 'develop'
 end
 
 gem 'rails_config'
 gem 'sqlite3', :platforms => :ruby
+gem 'mysql2'
 
 platforms :jruby do
   gem 'jruby-openssl'
@@ -37,7 +38,9 @@ end
 
 gem 'noid', '0.5.5'
 
-gem 'resque'
+gem 'resque', :require => 'resque/server'
+gem "resque-scheduler"
+gem "resque-status"
 
 # Storage-related gems
 gem 'aws-s3'

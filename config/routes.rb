@@ -1,11 +1,13 @@
-NuigRnag::Application.routes.draw do
+require 'resque/server'
 
+NuigRnag::Application.routes.draw do
+  scope ENV["RAILS_RELATIVE_URL_ROOT"] || "/" do
   root :to => "catalog#index"
 
   Blacklight.add_routes(self)
   #HydraHead.add_routes(self)
 
-  mount UserGroup::Engine => "user_groups"
+  mount UserGroup::Engine => "/user_groups"
 
   resources :objects, :only => ['edit', 'update', 'create']
   resources :collections do
@@ -28,6 +30,13 @@ NuigRnag::Application.routes.draw do
   match '/contact' => 'static_pages#contact', :via => :get
   #required for hydra-core/lib/hydra/controller/controller_behavior.rb and lib/blacklight/controller.rb
   match 'user_groups/users/sign_in' => 'devise/sessions_controller#new', :via => :get, :as => :new_user_session
+
+  match 'objects/:id' => 'catalog#show', :via => :get
+
+  # need to put in the 'system administrator' role here
+  #authenticate :admin do
+    mount Resque::Server, :at => "/resque"
+  #end
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
@@ -85,4 +94,5 @@ NuigRnag::Application.routes.draw do
   # This is a legacy wild controller route that's not recommended for RESTful applications.
   # Note: This route will make all actions in every controller accessible via GET requests.
   # match ':controller(/:action(/:id))(.:format)'
+  end
 end

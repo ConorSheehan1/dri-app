@@ -1,5 +1,5 @@
-module S3Interface
-  module Utils
+module Storage
+  module S3Interface
 
     # Get a hash of all surrogates for an object
     def self.get_surrogates(doc)
@@ -24,16 +24,15 @@ module S3Interface
       @surrogates_hash = {}
       files.each do |file|
         begin
-          file.match(/dri:#{bucket}-([-a-zA-z0-9]*)\..*/)
+          file.match(/dri:#{bucket}_([-a-zA-z0-9]*)\..*/)
           url = AWS::S3::S3Object.url_for(file, bucket, :authenticated => true, :expires_in => 60 * 30)
           @surrogates_hash[$1] = url
         rescue Exception => e
-          logger.debug "Problem getting url for file #{filename} : #{e.to_s}"
+          logger.debug "Problem getting url for file #{file} : #{e.to_s}"
         end
       end
 
       AWS::S3::Base.disconnect!()
-
       return @surrogates_hash
     end
 

@@ -2,7 +2,7 @@ class CreateMp3
   @queue = "create_mp3_queue"
 
   require 'open3'
-  require 's3_interface/utils'
+  require 'storage/s3_interface'
 
   def self.perform(object_id)
     Rails.logger.info "Creating mp3 version of #{object_id} asset"
@@ -29,8 +29,8 @@ class CreateMp3
       # requeue?
     end
 
-    filename = "#{object_id}-mp3-#{Settings.mp3_out_options.channel}-#{Settings.mp3_out_options.bitrate}-#{Settings.mp3_out_options.frequency}.mp3"
-    S3Interface::Utils.store_surrogate(object_id, outputfile, filename)
+    filename = "#{object_id}_mp3_web_quality.mp3"
+    Storage::S3Interface.store_surrogate(object_id, outputfile, filename)
 
   end
 
@@ -45,11 +45,11 @@ class CreateMp3
   # settings come from the settings.yml config file
   #
   def self.output_options
-    codec = "-acodec #{Settings.mp3_out_options.codec}" unless Settings.mp3_out_options.codec.blank?
-    channel = "-ac #{Settings.mp3_out_options.channel}" unless Settings.mp3_out_options.channel.blank?
-    bitrate = "-ab #{Settings.mp3_out_options.bitrate}" unless Settings.mp3_out_options.bitrate.blank?
-    frequency = "-ar #{Settings.mp3_out_options.frequency}" unless Settings.mp3_out_options.frequency.blank?
-    strip_metadata = "-map_metadata -1" if Settings.mp3_out_options.strip_metadata.eql?("yes")
+    codec = "-acodec #{Settings.mp3_web_quality_out_options.codec}" unless Settings.mp3_web_quality_out_options.codec.blank?
+    channel = "-ac #{Settings.mp3_web_quality_out_options.channel}" unless Settings.mp3_web_quality_out_options.channel.blank?
+    bitrate = "-ab #{Settings.mp3_web_quality_out_options.bitrate}" unless Settings.mp3_web_quality_out_options.bitrate.blank?
+    frequency = "-ar #{Settings.mp3_web_quality_out_options.frequency}" unless Settings.mp3_web_quality_out_options.frequency.blank?
+    strip_metadata = "-map_metadata -1" if Settings.mp3_web_quality_out_options.strip_metadata.eql?("yes")
     "#{codec} #{channel} #{bitrate} #{frequency} #{strip_metadata}"
   end
 

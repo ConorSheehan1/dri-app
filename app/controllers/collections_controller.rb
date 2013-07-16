@@ -1,6 +1,10 @@
 # Controller for the Collection model
 #
+require 'permission_methods'
+
 class CollectionsController < AssetsController
+  include PermissionMethods
+
   before_filter :authenticate_user!, :only => [:index, :create, :new, :show, :edit, :update]
 
   # Shows list of user's collections
@@ -39,7 +43,7 @@ class CollectionsController < AssetsController
   #
   def edit
     enforce_permissions!("edit",params[:id])
-    @collection = retrieve_object(params[:id])
+    @collection = retrieve_object!(params[:id])
 
     respond_to do |format|
       format.html
@@ -50,7 +54,7 @@ class CollectionsController < AssetsController
   #
   def show
     enforce_permissions!("show",params[:id])
-    @collection = retrieve_object(params[:id])
+    @collection = retrieve_object!(params[:id])
 
     respond_to do |format|
       format.html  
@@ -68,22 +72,29 @@ class CollectionsController < AssetsController
   # Updates the attributes of an existing model.
   #
   def update
-    #TODO:: Update Access Controls page
-    ###Update depending on whats change
-    if params[:dri_model_collection][:manager_groups_string].present? or params[:dri_model_collection][:manager_users_string].present?
-      enforce_permissions!("manage_collection", params[:id])
-   else
-      enforce_permissions!("edit",params[:id])
+    update_object_permission_check(params[:dri_model_collection][:manager_groups_string],params[:dri_model_collection][:manager_users_string], params[:id])
+
+    @collection = retrieve_object!(params[:id])
+
+    #For sub collections will have to set a governing_collection_id
+    #Create a sub collections controller?
+
+    params[:dri_model_collection][:private_metadata] = set_private_metadata_permission(params[:dri_model_collection].delete(:private_metadata)) if params[:dri_model_collection][:private_metadata].present?
+    params[:dri_model_collection][:master_file] = set_master_file_permission(params[:dri_model_collection].delete(:master_file)) if params[:dri_model_collection][:master_file].present?
+
+
+    if ((params[:dri_model_collection][:private_metadata].blank? || params[:dri_model_collection][:private_metadata]=="-1") || 
+       (params[:dri_model_collection][:master_file].blank? || params[:dri_model_collection][:master_file]=="-1") ||
+       (params[:dri_model_collection][:read_groups_string].blank? && params[:dri_model_collection][:read_users_string].blank?) ||
+       (params[:dri_model_collection][:manager_users_string].blank? && params[:dri_model_collection][:manager_groups_string].blank? && params[:dri_model_collection][:edit_users_string].blank? && params[:dri_model_collection][:edit_groups_string].blank?))
+      flash[:error] = t('dri.flash.error.not_updated', :item => params[:id])
+    else
+      @collection.update_attributes(params[:dri_model_collection])
+      #Apply private_metadata & properties to each DO/Subcollection within this collection
+      flash[:notice] = t('dri.flash.notice.updated', :item => params[:id])
     end
 
-    @collection = retrieve_object(params[:id])
-    
-    #Temp delete embargo [Waiting for hydra bug fix]
-    params[:dri_model_collection].delete(:embargo)
-
-    @collection.update_attributes(params[:dri_model_collection])
     respond_to do |format|
-      flash[:notice] = t('dri.flash.notice.updated', :item => params[:id])
       format.html  { render :action => "edit" }
     end
   end
