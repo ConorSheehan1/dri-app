@@ -95,9 +95,8 @@ group :development, :test do
   gem 'rspec-rails', '~> 3.0'
   gem 'rspec_api_documentation'
   gem 'poltergeist', '>= 1.11.0'
-  gem 'phantomjs', :require => 'phantomjs/poltergeist'
-  gem 'simplecov'
-  gem 'simplecov-rcov'
+  gem 'phantomjs', require: 'phantomjs/poltergeist'
+  gem 'simplecov', require: false
   gem 'railroady'
   gem 'show_me_the_cookies'
   gem 'better_errors'

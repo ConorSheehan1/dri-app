@@ -1,17 +1,4 @@
-require 'simplecov'
-require 'simplecov-rcov'
 require 'active_fedora/cleaner'
-
-class SimpleCov::Formatter::MergedFormatter
-  def format(result)
-    SimpleCov::Formatter::HTMLFormatter.new.format(result)
-    SimpleCov::Formatter::RcovFormatter.new.format(result)
-  end
-end
-SimpleCov.formatter = SimpleCov::Formatter::MergedFormatter
-
-SimpleCov.start 'rails'
-
 require 'rubygems'
 require 'i18n'
 require 'capybara/poltergeist'
@@ -20,6 +7,9 @@ require 'cucumber/api_steps'
 require 'rake'
 require 'phantomjs'
 require 'rspec'
+# spec_helper for coverage report
+require File.expand_path('../../../spec/spec_helper', __FILE__)
+run_coverage('Cucumber')
 
 Capybara.javascript_driver = :poltergeist
 Capybara.register_driver :poltergeist do |app|
@@ -120,3 +110,4 @@ end
 def last_json
   page.source
 end
+

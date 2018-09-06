@@ -1,19 +1,6 @@
 require 'rubygems'
 require 'capybara/poltergeist'
 
-def zeus_running?
-  File.exists? '.zeus.sock'
-end
-
-if !zeus_running?
-    require 'simplecov'
-    require 'simplecov-rcov'
-    SimpleCov.formatter = SimpleCov::Formatter::RcovFormatter
-    SimpleCov.start do 
-        add_filter "/spec/"
-        add_filter "/config/"
-    end
-end
 
 #Capybara.javascript_driver = :poltergeist
 Capybara.register_driver :poltergeist do |app|
@@ -41,3 +28,4 @@ end
 
 Rails.application.eager_load!
 
+run_coverage('Rspec')

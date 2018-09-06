@@ -67,6 +67,10 @@ To generate the api docs
 
   $ bundle exec rake apidoc:generate
 
+To generate code coerage
+
+  $ RUN_CONVERAGE=true bundle exec rspec && bundle exec cucumber
+
 == Dependencies
 
 If you are using homebrew on OSX

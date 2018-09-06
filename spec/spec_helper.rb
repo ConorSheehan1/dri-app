@@ -99,3 +99,38 @@ RSpec.configure do |config|
   Kernel.srand config.seed
 =end
 end
+
+def zeus_running?
+  File.exists? '.zeus.sock'
+end
+
+# def full_rspec?
+#   ARGV.grep(/spec/).empty?
+# end
+
+# def full_cucumber?
+#   # if argv contains feature, not followed by .rb
+#   # features/admin return false
+#   # spec/features/
+#   ARGV.grep(/features/).empty?
+# end
+
+# @argument command ('Rspec' | 'Cucumber')
+# https://github.com/colszowka/simplecov/issues/29
+# https://github.com/colszowka/simplecov/issues/429
+# 90 minutes timeout for test suite coverage merge
+def run_coverage(command, timeout=5400)
+  # only generate coverage report when running the entire test suite
+  if ENV['RUN_COVERAGE'] && !zeus_running?
+    require 'simplecov'
+
+    SimpleCov.command_name(command)
+    SimpleCov.use_merging(true)
+    SimpleCov.merge_timeout(timeout)
+
+    SimpleCov.start 'rails' do 
+      add_filter "/spec/"
+      add_filter "/config/"
+    end
+  end
+end
