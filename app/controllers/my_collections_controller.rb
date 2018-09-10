@@ -270,7 +270,14 @@ class MyCollectionsController < ApplicationController
       format.html { store_preferred_view }
       format.rss  { render layout: false }
       format.atom { render layout: false }
-      format.json { render json: render_search_results_as_json }
+      format.json do
+        json = render_search_results_as_json
+        if params[:pretty] == "true"
+            render json: JSON.pretty_generate(json)
+        else
+            render json: json
+        end
+      end
       
       additional_response_formats(format)
       document_export_formats(format)

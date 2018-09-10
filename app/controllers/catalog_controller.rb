@@ -237,7 +237,12 @@ class CatalogController < ApplicationController
       format.rss  { render layout: false }
       format.atom { render layout: false }
       format.json do
-        render json: render_search_results_as_json
+        json = render_search_results_as_json
+        if params[:pretty] == "true"
+            render json: JSON.pretty_generate(json)
+        else
+            render json: json
+        end
       end
 
       additional_response_formats(format)
