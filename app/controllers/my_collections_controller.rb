@@ -1,8 +1,10 @@
 # -*- encoding : utf-8 -*-
 class MyCollectionsController < ApplicationController
-  include DRI::Catalog
-  
+  # authentication must always happen before including DIR::catalog,
+  # otherwise enforce_search_for_show_permissions in catalog will return 401
+  # even when the user provides a valid api key
   before_action :authenticate_user_from_token!
+  include DRI::Catalog
   before_action :authenticate_user!
 
   # This applies appropriate access controls to all solr queries
@@ -212,7 +214,7 @@ class MyCollectionsController < ApplicationController
     # whether the sort is ascending or descending (it must be asc or desc
     # except in the relevancy case).
     config.add_sort_field 'system_create_dtsi desc', label: 'newest'
-    # The year created sort throws an error as the date type is not enforced and so a string can be passed in 
+    # The year created sort throws an error as the date type is not enforced and so a string can be passed in
     # - it is commented out for this reason.
     # config.add_sort_field 'creation_date_dtsim, title_sorted_ssi asc', label: 'year created'
 
@@ -249,7 +251,7 @@ class MyCollectionsController < ApplicationController
       solr_parameters[:fq] << "+#{ActiveFedora.index_field_mapper.solr_name('root_collection_id', :facetable, type: :string)}:\"#{user_parameters[:collection]}\"" if user_parameters[:collection].present?
     end
   end
-  
+
   def self.controller_path
     'my_collections'
   end
@@ -278,7 +280,6 @@ class MyCollectionsController < ApplicationController
             render json: json
         end
       end
-      
       additional_response_formats(format)
       document_export_formats(format)
     end
@@ -291,7 +292,7 @@ class MyCollectionsController < ApplicationController
     @presenter = DRI::MyCollectionsPresenter.new(@document, view_context)
 
     supported_licences
-    
+
     respond_to do |format|
       format.html { setup_next_and_previous_documents }
       format.json do
@@ -326,6 +327,7 @@ class MyCollectionsController < ApplicationController
 
     @object = SolrDocument.new(result.first)
 
+    params[:per_page] ||= blacklight_config.default_per_page
     @response, document_list = @object.duplicates
     @document_list = Kaminari.paginate_array(document_list).page(params[:page]).per(params[:per_page])
   end

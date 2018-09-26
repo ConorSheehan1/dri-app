@@ -32,7 +32,7 @@ gem 'browse-everything', git: 'https://github.com/samvera/browse-everything.git'
 gem 'avalon_ingest', git: 'https://github.com/stkenny/avalon_ingest'
 gem 'roo', '2.6.0'
 
-gem 'active-fedora', '9.11'
+gem 'active-fedora', '9.13'
 gem 'active_fedora-noid', '1.1.1'
 
 gem 'config'
@@ -60,7 +60,7 @@ gem 'syslog-logger'
 
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
-gem 'jquery-cookie-rails'
+gem 'js_cookie_rails'
 
 # clients
 gem 'rest-client'
@@ -93,6 +93,7 @@ end
 group :development, :test do
   gem 'guard'
   gem 'rspec-rails', '~> 3.0'
+  gem 'rswag-specs', '~> 2.0'
   gem 'poltergeist', '>= 1.11.0'
   gem 'phantomjs', :require => 'phantomjs/poltergeist'
   gem 'simplecov'
@@ -111,6 +112,7 @@ group :development, :test do
   gem 'fcrepo_wrapper', '0.6.0'
 
   gem 'fakes3', git: 'ssh://git@tracker.dri.ie:2200/drirepo/fake-s3.git', branch: 'issue22'
+
 end
 
 group :test do
@@ -174,3 +176,7 @@ gem 'jquery-datatables', git: 'https://github.com/stkenny/jquery-datatables.git'
 gem "jquery-slick-rails"
 gem 'remotipart'
 
+
+gem "rswag-api", "~> 2.0"
+
+gem "rswag-ui", "~> 2.0"
