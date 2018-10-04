@@ -268,6 +268,19 @@ class MyCollectionsController < ApplicationController
 
     params[:q_ws] = params.delete(:q)
 
+    # # @document_list.first.select {|k,v| v.kind_of? String}.keys
+    # TODO find more abstract way of ensuring all json returned from solr 
+    # is passed as hash and not string
+    @document_list.map! do |doc|
+      doc.update(doc) do |k, v|
+        if k == "object_profile_ssm"
+          v.map! {|j| JSON.parse(j)}
+        else
+          v
+        end
+      end
+    end
+
     respond_to do |format|
       format.html { store_preferred_view }
       format.rss  { render layout: false }
