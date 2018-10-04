@@ -39,13 +39,7 @@ class CollectionsController < BaseObjectsController
     collections = results_to_hash(solr_query)
 
     respond_to do |format|
-      format.json do
-        if params[:pretty] == "true"
-            render json: JSON.pretty_generate(collections)
-        else
-            render json: collections
-        end
-      end
+      format.json { render(json: collections) }
     end
   end
 
