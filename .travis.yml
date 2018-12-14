@@ -1,0 +1,34 @@
+os: linux
+env: DISPLAY=':99.0'
+dist: trusty
+addons:
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
+
+language: ruby
+cache: bundler
+rvm:
+  - 2.4.4
+ 
+before_script:
+  - cp config/fedora.yml.sample config/fedora.yml
+  - cp config/solr.yml.sample config/solr.yml
+  - cp config/database.yml.sample config/database.yml
+  - cp config/redis.yml.sample config/redis.yml
+  - bundle install
+  - bundle exec rake db:migrate
+  - bundle exec rake db:seed
+  - bundle exec rake db:migrate
+  - bundle exec rake db:test:prepare
+  - bundle exec fakes3 -r fakes3_root -p 8081 -H localhost &>/dev/null &
+
+script:
+  - bundle exec rake ci_spec
+  - bundle exec rake db:migrate
+  - bundle exec rake db:seed
+  - bundle exec rake db:test:prepare
+  - bundle exec rake ci
+  - bundle exec rake assets:precompile
