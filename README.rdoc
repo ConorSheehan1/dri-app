@@ -1,3 +1,5 @@
+{<img src="https://travis-ci.org/ConorSheehan1/dri-app.svg?branch=develop" alt="Build Status" />}[https://travis-ci.org/ConorSheehan1/dri-app]
+
 == Welcome to the DRI Hydra Head
 
 This repository contains the Digital Repository of Ireland's Hydra application.
